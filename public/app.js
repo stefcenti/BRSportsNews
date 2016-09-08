@@ -1,16 +1,50 @@
-// grab the articles as a json
-$.getJSON('/articles', function(data) {
-  // for each one
-  for (var i = 0; i<data.length; i++){
-    // display the apropos information on the page
-    $('#articles').append(
-        '<p data-id="' + data[i]._id + '">'+ 
-        data[i].sportName + '<br />'+ 
-        data[i].sportLink + '<br />'+
-        data[i].articleHeadline + '<br />' +
-        data[i].articleLink + '</p>');
+var BRNewsApp = {
+  // Attributes
+  articles: [],
+  currArticle: 0,
+
+  // Methods
+  start: function() {
+    // grab the articles as a json
+    // display the first article
+    var self = this;
+    $.getJSON('/articles', function(data) {
+
+      self.articles = data;
+      // for each one
+        /* This code pushes all the articles to the page
+         * We only want to show one article.  Before we do that, save
+         * all the articles for displaying as the user clicks through them.
+
+        // display the apropos information on the page
+      for (var i = 0; i<data.length; i++){
+        $('#articles').append(
+            '<p data-id="' + data[i]._id + '">'+ 
+            data[i].sportName + '<br />'+ 
+            data[i].sportLink + '<br />'+
+            data[i].articleHeadline + '<br />' +
+            data[i].articleLink + '</p>');
+        */
+        self.displayArticle();
+      });
+  },
+
+  displayArticle: function() {
+    // Display the current Article
+    var heading = "<h3>" + this.articles[this.currArticle].sportName + "<h3>";
+
+    $('#article').html(heading);
+  },
+
+  nextArticle: function() {
+    // Display the next article.  If there are no
+    // more articles, start at the beginning
+    this.currArticle = this.currArticle == this.articles.length ?
+      0 : this.currArticle + 1;
+
+    this.displayArticle();
   }
-});
+}
 
 
 // whenever someone clicks a p tag
@@ -73,3 +107,12 @@ $(document).on('click', '#savenote', function(){
   $('#titleinput').val("");
   $('#bodyinput').val("");
 });
+
+// when you click the savenote button
+$(document).on('click', '#startnews', function(){
+  BRNewsApp.start();
+});
+
+$(document).on('click', '#article', function(){
+  BRNewsApp.nextArticle();
+})

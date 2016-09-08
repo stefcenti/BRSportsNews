@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Document</title>
+  <script src="https://code.jquery.com/jquery-2.2.1.min.js"></script>
   <style>
     body{
       /*background-color: #DECADE*/
@@ -13,13 +14,13 @@
       margin: 0 auto;
       padding-top: 5%;
     }
-    #articles{
+    #article{
       width:60%;
       height:700px;
       display:inline-block;
       overflow: auto;
     }
-    #notes{
+    #note{
       width:30%;
       float:right;
     }
@@ -40,12 +41,11 @@
 </head>
 <body>
   <div id="wrapper">
-    <h1>Note Scraper</h1>
-    <h2><i>If you can do this...the homework should be no problem.</i></h2>
-    <div id="articles"></div>
-    <div id="notes"></div>
+    <h1>Bridgewater-Raritan Sports News</h1>
+    <div id="article"></div>
+    <div id="note"></div>
+    <button id="startnews">START</button>
   </div>
-  <script src="https://code.jquery.com/jquery-2.2.1.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
