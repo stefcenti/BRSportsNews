@@ -1,5 +1,7 @@
 var BRNewsApp = {
   // Attributes
+  baseUrl: 'http://highschoolsports.nj.com',
+  brUrl: this.baseUrl + "/school/bridgewater-bridgewater-raritan/",
   articles: [],
   currArticle: 0,
 
@@ -31,9 +33,14 @@ var BRNewsApp = {
 
   displayArticle: function() {
     // Display the current Article
-    var heading = "<h3>" + this.articles[this.currArticle].sportName + "<h3>";
+    var article = this.articles[this.currArticle];
 
-    $('#article').html(heading);
+    // 
+    // Creat a heading with a link to the sports category.  The link will open in a separate window
+    var sportRef = "<a href='" + this.baseUrl + article.sportLink + "'>" + article.sportName + "</a>";
+    var articleRef = "<a href='" + this.brUrl + article.articleLink + "'>" + article.articleHeadline + "</a>";
+    var articleDiv = "<div>" + sportRef + "<br>" + articleRef + "</div>";
+    $('#article').html(articleDiv);
   },
 
   nextArticle: function() {
