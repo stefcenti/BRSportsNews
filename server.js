@@ -23,7 +23,9 @@ app.use(express.static('public'));
 
 
 // Database configuration with mongoose
-mongoose.connect('mongodb://localhost/brrhsSportsNewsDB');
+var connection = process.env.MONGODB_URI || 'mongodb://localhost/brrhsSportsNewsDB';
+mongoose.connect(connection);
+//mongoose.connect('mongodb://localhost/brrhsSportsNewsDB');
 var db = mongoose.connection;
 
 // show any mongoose errors
@@ -84,16 +86,24 @@ app.get('/scrape', function(req, res) {
 		// This effectively passes the result object to the entry (and the title and link)
 		var entry = new Article (article);
 
-		// now, save that entry to the db
-		entry.save(function(err, doc) {
-			// log any errors
-		  if (err) {
-		    console.log(err);
-		  } 
-		  // or log the doc
-		  else {
-		    console.log(doc);
-		  }
+		// Make sure the article does not already exist
+		Article.count({'articleHeadline': entry.articleHeadline}, function (err, count){
+			if (count > 0){
+				// Article exists, skip it and get the next one
+				return;
+			}
+
+			// now, save that entry to the db
+			entry.save(function(err, doc) {
+				// log any errors
+			  if (err) {
+			    console.log(err);
+			  } 
+			  // or log the doc
+			  else {
+			    console.log(doc);
+			  }
+			});
 		});
 
 
@@ -173,6 +183,6 @@ app.post('/articles/:id', function(req, res){
 
 
 // listen on port 3000
-app.listen(3000, function() {
-  console.log('App running on port 3000!');
+app.listen(process.env.PORT || 3000, function() {
+ console.log('App running on port 3000!');
 });
