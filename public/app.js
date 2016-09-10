@@ -1,33 +1,35 @@
 var BRNewsApp = {
   // Attributes
   baseUrl: 'http://highschoolsports.nj.com',
-  brUrl: this.baseUrl + "/school/bridgewater-bridgewater-raritan/",
+  brUrl: "http://highschoolsports.nj.com/school/bridgewater-bridgewater-raritan/",
   articles: [],
   currArticle: 0,
 
   // Methods
   start: function() {
+    var self = this;
+    // scrape the data from the website
+
+    self.scrape();
+
     // grab the articles as a json
     // display the first article
-    var self = this;
     $.getJSON('/articles', function(data) {
-
-      self.articles = data;
-      // for each one
-        /* This code pushes all the articles to the page
-         * We only want to show one article.  Before we do that, save
-         * all the articles for displaying as the user clicks through them.
-
-        // display the apropos information on the page
-      for (var i = 0; i<data.length; i++){
-        $('#articles').append(
-            '<p data-id="' + data[i]._id + '">'+ 
-            data[i].sportName + '<br />'+ 
-            data[i].sportLink + '<br />'+
-            data[i].articleHeadline + '<br />' +
-            data[i].articleLink + '</p>');
-        */
+        self.articles = data;
         self.displayArticle();
+      });
+  },
+
+  scrape: function() {
+    var self = this;
+
+    $.ajax({
+      method: "GET",
+      url: "/scrape",
+    })
+      // with that done, add the note information to the page
+      .done(function( data ) {
+        console.log(data);
       });
   },
 

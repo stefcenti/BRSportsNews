@@ -4,48 +4,32 @@
   <meta charset="UTF-8">
   <title>Document</title>
   <script src="https://code.jquery.com/jquery-2.2.1.min.js"></script>
-  <style>
-    body{
-      /*background-color: #DECADE*/
-      background-color: #F2F6D0
-    }
-    #wrapper{
-      width:960px;
-      margin: 0 auto;
-      padding-top: 5%;
-    }
-    #article{
-      width:60%;
-      height:700px;
-      display:inline-block;
-      overflow: auto;
-    }
-    #note{
-      width:30%;
-      float:right;
-    }
-    textarea, input{
-      display:block;
-      width:100%;
-      background-color: #FCF5C7;
-    }
-    input{
-      height:36px;
-      font-size: 24px;
-    }
-    textarea{
-      height:200px;
-      font-size: 18px;
-    }
-  </style>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" >
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
-  <div id="wrapper">
-    <h1>Bridgewater-Raritan Sports News</h1>
-    <div id="article"></div>
-    <div id="note"></div>
-    <button id="startnews">START</button>
-  </div>
+  <!-- <div id="wrapper"> -->
+    <div class="jumbotron"><h1>Bridgewater-Raritan Sports News</h1></div>
+    <div class="container">
+      <div class="row article-row">
+        <div class="col-sm-3" id="add-note"></div>
+        <div class="col-sm-6" id="article"></div>
+        <div class="col-sm-3" id="note"></div>
+      </div>
+      <div class="row button-row">
+        <div class="col-sm-3 button-align">
+          <button id="save-note">SAVE NOTE</button>
+       </div>
+       <div class="col-sm-6 button-align">
+         <button id="startnews">START</button>
+        </div>
+        <div class="col-sm-3 button-align">
+          <button id="delete-note">DELETE NOTE</button>
+        </div>
+      </div>
+    </div>
+  <!-- </div> -->
   <script src="app.js"></script>
 </body>
 </html>
