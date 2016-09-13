@@ -8,18 +8,46 @@ var BRNewsApp = {
   // Methods
   start: function() {
     var self = this;
-    // scrape the data from the website
-
-    self.scrape();
-
-    // grab the articles as a json
-    // display the first article
-    $.getJSON('/articles', function(data) {
+/*
+    // scrape the data from the website and load into the mongo DB
+    // self.scrape();
+    $.ajax({
+      method: "GET",
+      url: "/scrape",
+    })
+    .done(function(data){
+      console.log("1");
+      // grab the articles as a json
+      $.ajax({
+        method: "GET",
+        url: "/articles",
+      })
+      .done(function(data){
+        console.log("2");
         self.articles = data;
         self.displayArticle();
-      });
+      });     
+    });
+*/
+
+
+    // scrape the data from the website and load into the mongo DB
+    // self.scrape();
+    $.getJSON('/scrape', function(data) {
+      // grab the articles as a json
+      $.getJSON('/articles', function(articles) {
+        self.articles = articles;
+        self.displayArticle();
+      })
+    })
+    // check for error
+    .fail(function(data){
+      console.log("failed to scrape data");
+    });
+
   },
 
+/*
   scrape: function() {
     var self = this;
 
@@ -32,17 +60,22 @@ var BRNewsApp = {
         console.log(data);
       });
   },
+*/
 
   displayArticle: function() {
     // Display the current Article
+    if (!this.articles) {console.log("No Articles Yet")}
     var article = this.articles[this.currArticle];
 
     // 
     // Creat a heading with a link to the sports category.  The link will open in a separate window
     var sportRef = "<a href='" + this.baseUrl + article.sportLink + "'>" + article.sportName + "</a>";
-    var articleRef = "<a href='" + this.brUrl + article.articleLink + "'>" + article.articleHeadline + "</a>";
+    var articleRef = "<a href='" + this.baseUrl + article.articleLink + "'>" + article.articleHeadline + "</a>";
     var articleDiv = "<div>" + sportRef + "<br>" + articleRef + "</div>";
     $('#article').html(articleDiv);
+
+    // Now get the notes associated with this article
+    this.getNotes(article._id);
   },
 
   nextArticle: function() {
@@ -52,76 +85,131 @@ var BRNewsApp = {
       0 : this.currArticle + 1;
 
     this.displayArticle();
-  }
-}
+  },
 
+  // Retrieve the notes for this article and display them in the notes area.
+  // Save the Article Id with the Save and Delete buttons to be accessed later.
+  getNotes: function(thisId) {
+    // empty the notes from the note section
+    $('#notes').empty();
 
-// whenever someone clicks a p tag
-$(document).on('click', 'p', function(){
-  // empty the notes from the note section
-  $('#notes').empty();
-  // save the id from the p tag
-  var thisId = $(this).attr('data-id');
-
-  // now make an ajax call for the Article
-  $.ajax({
-    method: "GET",
-    url: "/articles/" + thisId,
-  })
-    // with that done, add the note information to the page
+    // now make an ajax call for the Article
+    $.getJSON('/articles/' + thisId, function(){
+    })
+    // with that done, add the notes to the page
     .done(function( data ) {
       console.log(data);
-      // the title of the article
-      $('#notes').append('<h2>' + data.title + '</h2>'); 
-      // an input to enter a new title
-      $('#notes').append('<input id="titleinput" name="title" >'); 
-      // a textarea to add a new note body
-      $('#notes').append('<textarea id="bodyinput" name="body"></textarea>'); 
-      // a button to submit a new note, with the id of the article saved to it
-      $('#notes').append('<button data-id="' + data._id + '" id="savenote">Save Note</button>');
 
-      // if there's a note in the article
-      if(data.note){
-        // place the title of the note in the title input
-        $('#titleinput').val(data.note.title);
-        // place the body of the note in the body textarea
-        $('#bodyinput').val(data.note.body);
+      // We need to save the article id so it can be accessed later
+      // Save it as an attribute of the save-note button
+      $('#save-note').attr({'data-id' : data._id});
+      // Add a textarea to add a new note body
+      //$('#add-note').append('<textarea id="bodyinput" name="body"></textarea>'); 
+
+      // If there's at least one note already associated with the article,
+      // place the data in the notes viewing area
+      if(data.notes){
+        // Append the notes into one text string to be displayed
+        for(var i=0; i<data.notes.length; i++) {
+          var text = i + ": " + data.notes[i].body + "\n======\n";
+        }
+
+        // Place the body of the note in the notes textarea
+        $('#notes').val(text);
+
+        // Save the id of the article associated with this note in the delete button
+        $('#delete-note').attr({'data-id': data._id});
       }
+    })
+    // check for error
+    .fail(function(data) {
+      console.log("failed to get notes for article: " + thisId);
     });
-});
+  },
 
-// when you click the savenote button
-$(document).on('click', '#savenote', function(){
-  // grab the id associated with the article from the submit button
-  var thisId = $(this).attr('data-id');
-
-  // run a POST request to change the note, using what's entered in the inputs
-  $.ajax({
-    method: "POST",
-    url: "/articles/" + thisId,
-    data: {
-      title: $('#titleinput').val(), // value taken from title input
-      body: $('#bodyinput').val() // value taken from note textarea
-    }
-  })
+  saveNote: function(thisId){
+    var noteData = $('#add-note').val()
+    // Run a POST request to add the note, using what's entered
+    // in the inputs
+    $.ajax({
+      method: "POST",
+      url: "/articles/" + thisId,
+      data: {
+        article: thisId, // associate this note with it's article
+        body: noteData // value taken from note textarea
+      }
+    })
     // with that done
     .done(function( data ) {
       // log the response
       console.log(data);
-      // empty the notes section
-      $('#notes').empty();
+      // push this note to the note viewing area
+      $('#notes').val(noteData);
+      // Also, remove the values entered in the input and textarea for note entry
+      $('#add-note').val("");
     });
+  },
 
-  // Also, remove the values entered in the input and textarea for note entry
-  $('#titleinput').val("");
-  $('#bodyinput').val("");
+  deleteNote: function(note){ 
+    console.log(thisId);
+    // make an AJAX GET request to delete the specific note 
+    // this uses the data-id of the p-tag, which is linked to the specific note
+    $.ajax({
+      type: "POST",
+      url: '/delete/' + thisId
+    })
+    // Code to run if the request succeeds (is done);
+    // The response is passed to the function
+    .done(function( data ) {
+       thisId.remove();
+    })//,
+    .fail(function( xhr, status, errorThrown ) {
+      alert( "Failed to delete note:\n" + note);
+      console.log( "Error: " + errorThrown );
+      console.log( "Status: " + status );
+      console.dir( xhr );
+    })
+    // Also, remove the values entered in the input and textarea for note entry
+     $('#titleinput').val("");
+     $('#bodyinput').val("");
+  }
+} // End of BRNewsApp
+
+// Make sure the Document is ready and loaded.
+// Execute the appropriate method based on events received
+$(document).on('ready', function (){
+  // when you click the start button
+  $(document).on('click', '#start-news', function(){
+    BRNewsApp.start();
+  });
+
+  // when you click on the article
+  $(document).on('click', '#article', function(){
+    BRNewsApp.nextArticle();
+  });
+
+/*
+  // when you click in the comment area, add an input area
+  // and stuff the article id into the save button to be
+  // retrieved later when clicked by the user.
+  $(document).on('click', '#add-note', function(){
+    BRNewsApp.getNotes();
+  });
+*/
+
+  // when you click the savenote button
+  $(document).on('click', '#save-note', function(){
+    // grab the id associated with the article from the submit button
+    var thisId = $(this).attr('data-id');
+
+    BRNewsApp.saveNote(thisId);
+  });
+
+  $(document).on('click', '#delete-note', function(){
+    // save the p tag that encloses the button
+    var note = $(this).attr('data-id');
+
+    BRNewsApp.deleteNote(note);
+  });
 });
 
-// when you click the savenote button
-$(document).on('click', '#startnews', function(){
-  BRNewsApp.start();
-});
-
-$(document).on('click', '#article', function(){
-  BRNewsApp.nextArticle();
-})

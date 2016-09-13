@@ -52,10 +52,16 @@ app.get('/', function(req, res) {
   res.send(index.html);
 });
 
-// A GET request to scrape the echojs website.
+// A GET request to scrape the nj.com website.
 app.get('/scrape', function(req, res) {
+
+	// Use an array to hold the Article ID and URL to be used later
+	// for scraping the text.  The ID will be used to update the Article
+	// with the text retrieved.
+	var articleUrls = [];
+
 	// first, we grab the body of the html with request
-  request('http://highschoolsports.nj.com/school/bridgewater-bridgewater-raritan/', function(error, response, html) {
+  	request('http://highschoolsports.nj.com/school/bridgewater-bridgewater-raritan/', function(error, response, html) {
   	// then, we load that into cheerio and save it to $ for a shorthand selector
     var $ = cheerio.load(html);
     // use the blognames for the headings
@@ -94,24 +100,63 @@ app.get('/scrape', function(req, res) {
 			}
 
 			// now, save that entry to the db
-			entry.save(function(err, doc) {
+			entry.save({w:"majority"}, function(err, doc) {
 				// log any errors
 			  if (err) {
 			    console.log(err);
 			  } 
 			  // or log the doc
 			  else {
+			  	articleUrls.push({id: doc._id, url: doc.articleLink, text1: "", text2: ""})
 			    console.log(doc);
 			  }
 			});
 		});
-
-
     });
-  });
-  // tell the browser that we finished scraping the text.
-  res.send("Scrape Complete");
+		// tell the browser that we finished scraping the text.
+	    res.json("Scrape Complete");
+	}); // end of request
 });
+
+/*
+function scrapeText(articles){
+console.log("1")
+	for (article in articles) {
+console.log("2")
+    	request(article.url, ( function(article) {
+console.log("3")
+
+	        return function(err, resp, html) {
+console.log("4")
+	            if (err) throw err;
+console.log("5")
+
+	            $ = cheerio.load(html);
+console.log("6")
+
+	            console.log("****\n"+article+"\n****");
+console.log("7")
+
+	            $('#article_container.entry-content p').each(function(i, element){
+console.log("8")
+	            	// Get the first 2 paragraphs of text. Note that there are almost
+	            	// always 2 or less on this site.
+	            	if (i===0)
+	            		article.text1 = element.text;
+	            	else if (i===1)
+	            		article.text2 = element.text;
+	            })
+console.log("9")
+	        }
+console.log("10")
+	    } )(article));
+console.log("11")
+    }
+    // Now that all the text has been scraped, update our database
+console.log("12")
+
+}
+*/
 
 // this will get the articles we scraped from the mongoDB
 app.get('/articles', function(req, res){
@@ -134,7 +179,7 @@ app.get('/articles/:id', function(req, res){
 	// prepare a query that finds the matching one in our db...
 	Article.findOne({'_id': req.params.id})
 	// and populate all of the notes associated with it.
-	.populate('note')
+	.populate('notes')
 	// now, execute our query
 	.exec(function(err, doc){
 		// log any errors
@@ -153,6 +198,7 @@ app.get('/articles/:id', function(req, res){
 // or if no note exists for an article, make the posted note it's note.
 app.post('/articles/:id', function(req, res){
 	// create a new note and pass the req.body to the entry.
+	console.log("newNote(req.body), req= " + req);
 	var newNote = new Note(req.body);
 
 	// and save the new note the db
@@ -166,7 +212,7 @@ app.post('/articles/:id', function(req, res){
 			// using the Article id passed in the id parameter of our url, 
 			// prepare a query that finds the matching Article in our db
 			// and update it to make it's lone note the one we just saved
-			Article.findOneAndUpdate({'_id': req.params.id}, {'note':doc._id})
+			Article.findOneAndUpdate({'_id': req.params.id}, {'notes':doc._id})
 			// execute the above query
 			.exec(function(err, doc){
 				// log any errors

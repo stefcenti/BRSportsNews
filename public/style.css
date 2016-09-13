@@ -23,8 +23,9 @@ body{
 #add-note{
   height: 100%;
   border:1px red solid;
+  resize: none;
 }
-#note{
+#notes{
   height: 100%;
   border:1px red solid;
 }
