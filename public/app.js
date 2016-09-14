@@ -8,59 +8,30 @@ var BRNewsApp = {
   // Methods
   start: function() {
     var self = this;
-/*
-    // scrape the data from the website and load into the mongo DB
-    // self.scrape();
-    $.ajax({
-      method: "GET",
-      url: "/scrape",
-    })
-    .done(function(data){
-      console.log("1");
-      // grab the articles as a json
-      $.ajax({
-        method: "GET",
-        url: "/articles",
-      })
-      .done(function(data){
-        console.log("2");
-        self.articles = data;
-        self.displayArticle();
-      });     
-    });
-*/
-
 
     // scrape the data from the website and load into the mongo DB
     // self.scrape();
-    $.getJSON('/scrape', function(data) {
+    $.getJSON('/scrape', function(response) {
+    }).done(function(response) {
+
       // grab the articles as a json
       $.getJSON('/articles', function(articles) {
+      }).done(function(articles) {
+
+        // save the articles for later
+        // display the first article
         self.articles = articles;
         self.displayArticle();
-      })
-    })
-    // check for error
-    .fail(function(data){
+
+      }).fail(function(articles){
+        console.log("failed to retrieve articles");
+      });
+
+    }).fail(function(data){
       console.log("failed to scrape data");
     });
 
   },
-
-/*
-  scrape: function() {
-    var self = this;
-
-    $.ajax({
-      method: "GET",
-      url: "/scrape",
-    })
-      // with that done, add the note information to the page
-      .done(function( data ) {
-        console.log(data);
-      });
-  },
-*/
 
   displayArticle: function() {
     // Display the current Article
@@ -115,7 +86,7 @@ var BRNewsApp = {
         }
 
         // Place the body of the note in the notes textarea
-        $('#notes').val(text);
+        $('#notes').append("\n"+data.notes)
 
         // Save the id of the article associated with this note in the delete button
         $('#delete-note').attr({'data-id': data._id});
@@ -131,6 +102,7 @@ var BRNewsApp = {
     var noteData = $('#add-note').val()
     // Run a POST request to add the note, using what's entered
     // in the inputs
+//    $.post('/articles/' + thisId, function(){
     $.ajax({
       method: "POST",
       url: "/articles/" + thisId,
@@ -144,7 +116,7 @@ var BRNewsApp = {
       // log the response
       console.log(data);
       // push this note to the note viewing area
-      $('#notes').val(noteData);
+      $('#notes').append("\n"+noteData)
       // Also, remove the values entered in the input and textarea for note entry
       $('#add-note').val("");
     });

@@ -199,37 +199,29 @@ app.get('/articles/:id', function(req, res){
 app.post('/articles/:id', function(req, res){
 	// create a new note and pass the req.body to the entry.
 	var newNote = new Note(req.body);
-
-	newNote.save(function(err, note){
-		if(err){
-		console.log("0: app.post('articles/:id')");
+console.log("1: app.post('articles/:id')");
+	// Find the article and push the new note to it's array
+	Article.findOne({'_id': req.params.id})
+	.exec(function(err, article){
+console.log("2: app.post('articles/:id')");
+		if (err){
+console.log("3: app.post('articles/:id')");
 			console.log(err);
 		} else {
-		console.log("1: app.post('articles/:id')");
-			// Find the article and push the new note to it's array
-			Article.findOne({'_id': req.params.id})
-			.exec(function(err, article){
-		console.log("2: app.post('articles/:id')");
+console.log("4: app.post('articles/:id')");
+			article.notes.push(newNote);
+console.log("5: app.post('articles/:id')");
+			article.save(function(err){
 				if (err){
-		console.log("3: app.post('articles/:id')");
+console.log("6: app.post('articles/:id')");
 					console.log(err);
 				} else {
-		console.log("4: app.post('articles/:id')");
-					article.notes.push(newNote);
-		console.log("5: app.post('articles/:id')");
-					article.save(function(err){
-						if (err){
-		console.log("6: app.post('articles/:id')");
-							console.log(err);
-						} else {
-		console.log("7: app.post('articles/:id')");
-							res.json(article);
-						}
-					});
+console.log("7: app.post('articles/:id')");
+					res.json(article);
 				}
-			});		
+			});
 		}
-	})
+	});
 /*
 	// and save the new note in the db
 	newNote.save(function(err, doc){

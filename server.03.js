@@ -161,14 +161,22 @@ console.log("12")
 // this will get the articles we scraped from the mongoDB
 app.get('/articles', function(req, res){
 	// grab every doc in the Articles array
-	Article.find({}, function(err, doc){
+console.log("1.1");
+	Article.find({})
+	// populate the notes associated with each article
+//	.populate('notes')
+	// execute the query
+	.exec(function(err, article){
+console.log("1.2");
 		// log any errors
 		if (err){
+console.log("1.3");
 			console.log(err);
 		} 
 		// or send the doc to the browser as a json object
 		else {
-			res.json(doc);
+console.log("1.4");
+			res.json(article);
 		}
 	});
 });
@@ -177,18 +185,23 @@ app.get('/articles', function(req, res){
 app.get('/articles/:id', function(req, res){
 	// using the id passed in the id parameter, 
 	// prepare a query that finds the matching one in our db...
+console.log("2.1");
 	Article.findOne({'_id': req.params.id})
 	// and populate all of the notes associated with it.
 	.populate('notes')
 	// now, execute our query
-	.exec(function(err, doc){
+	.exec(function(err, article){
 		// log any errors
+console.log("2.2");
 		if (err){
+console.log("2.3");
 			console.log(err);
 		} 
 		// otherwise, send the doc to the browser as a json object
 		else {
-			res.json(doc);
+console.log("2.4");
+			console.log(article.notes[0].body)
+			res.json(article);
 		}
 	});
 });
@@ -199,37 +212,29 @@ app.get('/articles/:id', function(req, res){
 app.post('/articles/:id', function(req, res){
 	// create a new note and pass the req.body to the entry.
 	var newNote = new Note(req.body);
-
-	newNote.save(function(err, note){
-		if(err){
-		console.log("0: app.post('articles/:id')");
+console.log("3.1");
+	// Find the article and push the new note to it's array
+	Article.findOne({'_id': req.params.id})
+	.exec(function(err, article){
+console.log("3.2");
+		if (err){
+console.log("3.3");
 			console.log(err);
 		} else {
-		console.log("1: app.post('articles/:id')");
-			// Find the article and push the new note to it's array
-			Article.findOne({'_id': req.params.id})
-			.exec(function(err, article){
-		console.log("2: app.post('articles/:id')");
+console.log("3.4");
+			article.notes.push(newNote);
+console.log("3.5");
+			article.save(function(err){
 				if (err){
-		console.log("3: app.post('articles/:id')");
+console.log("3.6");
 					console.log(err);
 				} else {
-		console.log("4: app.post('articles/:id')");
-					article.notes.push(newNote);
-		console.log("5: app.post('articles/:id')");
-					article.save(function(err){
-						if (err){
-		console.log("6: app.post('articles/:id')");
-							console.log(err);
-						} else {
-		console.log("7: app.post('articles/:id')");
-							res.json(article);
-						}
-					});
+console.log("3.7");
+					res.json(article);
 				}
-			});		
+			});
 		}
-	})
+	});
 /*
 	// and save the new note in the db
 	newNote.save(function(err, doc){
