@@ -4,6 +4,7 @@ var BRNewsApp = {
   brUrl: "http://highschoolsports.nj.com/school/bridgewater-bridgewater-raritan/",
   articles: [],
   currArticle: 0,
+  noteCount: 0,
 
   // Methods
   start: function() {
@@ -61,6 +62,7 @@ var BRNewsApp = {
   // Retrieve the notes for this article and display them in the notes area.
   // Save the Article Id with the Save and Delete buttons to be accessed later.
   getNotes: function(thisId) {
+    var self = this;
     // empty the notes from the note section
     $('#notes').empty();
 
@@ -79,14 +81,16 @@ var BRNewsApp = {
 
       // If there's at least one note already associated with the article,
       // place the data in the notes viewing area
+      // TODO: change to use handlebars
       if(data.notes){
-        // Append the notes into one text string to be displayed
+        var $notes = $('#notes');
+        // Append the notes into the notes area
         for(var i=0; i<data.notes.length; i++) {
-          var text = i + ": " + data.notes[i].body + "\n======\n";
+          $notes.append( ++self.noteCount + ": " + data.notes[i].body + "\n======\n" );
         }
 
         // Place the body of the note in the notes textarea
-        $('#notes').append("\n"+data.notes)
+        //$('#notes').append(text);
 
         // Save the id of the article associated with this note in the delete button
         $('#delete-note').attr({'data-id': data._id});
@@ -99,6 +103,7 @@ var BRNewsApp = {
   },
 
   saveNote: function(thisId){
+    var self = this;
     var noteData = $('#add-note').val()
     // Run a POST request to add the note, using what's entered
     // in the inputs
@@ -116,13 +121,14 @@ var BRNewsApp = {
       // log the response
       console.log(data);
       // push this note to the note viewing area
-      $('#notes').append("\n"+noteData)
+      $('#notes').append(++self.noteCount + ": " + noteData + "\n======\n");
       // Also, remove the values entered in the input and textarea for note entry
       $('#add-note').val("");
     });
   },
 
   deleteNote: function(note){ 
+    var self = this;
     console.log(thisId);
     // make an AJAX GET request to delete the specific note 
     // this uses the data-id of the p-tag, which is linked to the specific note
@@ -134,6 +140,7 @@ var BRNewsApp = {
     // The response is passed to the function
     .done(function( data ) {
        thisId.remove();
+       self.noteCount--;
     })//,
     .fail(function( xhr, status, errorThrown ) {
       alert( "Failed to delete note:\n" + note);
