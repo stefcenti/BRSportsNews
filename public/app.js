@@ -56,7 +56,7 @@ var BRNewsApp = {
   nextArticle: function() {
     // Display the next article.  If there are no
     // more articles, start at the beginning
-    this.currArticle = this.currArticle == this.articles.length ?
+    this.currArticle = this.currArticle == (this.articles.length - 1) ?
       0 : this.currArticle + 1;
 
     this.displayArticle();
