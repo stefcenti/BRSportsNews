@@ -6,6 +6,9 @@ var BRNewsApp = {
   currArticle: 0,
   noteCount: 0,
 
+  // Selector Attributes
+  $notes: $('#notes'),
+
   // Methods
   start: function() {
     var self = this;
@@ -83,10 +86,10 @@ var BRNewsApp = {
       // place the data in the notes viewing area
       // TODO: change to use handlebars
       if(data.notes){
-        var $notes = $('#notes');
+        var notes = data.notes
         // Append the notes into the notes area
-        for(var i=0; i<data.notes.length; i++) {
-          $notes.append( ++self.noteCount + ": " + data.notes[i].body + "\n======\n" );
+        for(var i=0; i<notes.length; i++) {
+          self.displayNote(notes[i]);
         }
 
         // Place the body of the note in the notes textarea
@@ -100,6 +103,16 @@ var BRNewsApp = {
     .fail(function(data) {
       console.log("failed to get notes for article: " + thisId);
     });
+  },
+
+  displayNote: function(note){
+    var rawDate = note.date;
+    var correctDate = moment(rawDate).format('lll');
+
+    this.$notes.append(correctDate + "<br>");
+
+    this.$notes.append( ++this.noteCount + ": " + note.body + "<br>=========<br>" );
+
   },
 
   saveNote: function(thisId){
@@ -121,7 +134,7 @@ var BRNewsApp = {
       // log the response
       console.log(data);
       // push this note to the note viewing area
-      $('#notes').append(++self.noteCount + ": " + noteData + "\n======\n");
+      $('#notes').append(++self.noteCount + ": " + noteData + "<br>=========<br>");
       // Also, remove the values entered in the input and textarea for note entry
       $('#add-note').val("");
     });

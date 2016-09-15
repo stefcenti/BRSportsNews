@@ -11,10 +11,11 @@ var NoteSchema = new Schema({
 		ref: 'Article'
 	},
 
-	// We only need to keep the text of the notes associated with
-	// each article.  Since the the date/time created will 
-	// automatically be added by mongodb it is not needed as an 
-	// additional attribute
+	date: {
+		type: Date,
+		default: Date.now
+	},
+
 	body: {
 		type:String
 	}
