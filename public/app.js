@@ -55,7 +55,7 @@ var BRNewsApp = {
 
   nextArticle: function() {
     // Display the next article.  If there are no
-    // more articles, start at the beginning
+    // more articles, start at the beginning.
     this.currArticle = this.currArticle == (this.articles.length - 1) ?
       0 : this.currArticle + 1;
 
@@ -68,6 +68,9 @@ var BRNewsApp = {
     var self = this;
     // empty the notes from the note section
     $('#notes').empty();
+
+    // reset current note
+    self.noteCount = 0;
 
     // now make an ajax call for the Article
     $.getJSON('/articles/' + thisId, function(){
@@ -133,9 +136,10 @@ var BRNewsApp = {
     .done(function( data ) {
       // log the response
       console.log(data);
-      // push this note to the note viewing area
-      $('#notes').append(++self.noteCount + ": " + noteData + "<br>=========<br>");
-      // Also, remove the values entered in the input and textarea for note entry
+      // Move this note from the input to the viewing area.
+      // Just use the value entered and the current date/time
+      // to save an extra query to the db.
+      self.displayNote({date: $.now(), body: noteData});
       $('#add-note').val("");
     });
   },

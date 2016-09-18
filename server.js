@@ -79,19 +79,25 @@ app.get('/scrape', function(req, res) {
 		// save it with the associated the sport
 		var article = {};
 
-		var result = $(this).children('.blogname');
-		article.sportName = result.eq(0).text();
-		article.sportLink = result.children('a').attr('href');
+		var $element = $(element).find('.blogname');
+		article.sportName = $element.text();
+		article.sportLink = $element.find('a').attr('href');
 
-		result = $(this).children('.hssn-fullheadline');
-		article.articleHeadline = result.eq(0).text();
-		article.articleLink = result.children('a').attr('href');
+		$element = $(element).find('.hssn-fullheadline');
+		article.articleHeadline = $element.text();
+		article.articleLink = $element.find('a').attr('href');
 
-		console.log("==========\n" + 
-			article.sportName + 
-			article.sportLink + 
-			article.articleHeadline + 
-			article.articleLink + 
+		if (!article.sportName || !article.sportLink) {
+			// There is no sports category so skip this article
+			// since it is too general.
+			return;
+		}
+
+		console.log("==========\n" + "|" +
+			article.sportName + "|" +
+			article.sportLink + "|" +
+			article.articleHeadline + "|" +
+			article.articleLink + "|" +
 			"\n==========");
 
 		// using our Article model, create a new entry.
@@ -201,10 +207,11 @@ app.get('/articles/:id', function(req, res){
 });
 
 
-// replace the existing note of an article with a new one
-// or if no note exists for an article, make the posted note it's note.
+// Create a new Note and save it in the db.
+// Push it into the Article's notes array.
+// Save the updated article in the db.
 app.post('/articles/:id', function(req, res){
-	// create a new note and pass the req.body to the entry.
+	// Create a new note passing the req.body to the entry.
 	var newNote = new Note(req.body);
 
 	newNote.save(function(err, note){
@@ -237,33 +244,6 @@ app.post('/articles/:id', function(req, res){
 			});		
 		}
 	})
-/*
-	// and save the new note in the db
-	newNote.save(function(err, doc){
-		// log any errors
-		if(err){
-			console.log(err);
-		} 
-		// otherwise
-		else {
-			// using the Article id passed in the id parameter of our url, 
-			// prepare a query that finds the matching Article in our db
-			// and populates the notes array with all the notes that are
-			// associated with this article
-			Article.findOneAndUpdate({'_id': req.params.id}, {'notes':doc._id})
-			// execute the above query
-			.exec(function(err, doc){
-				// log any errors
-				if (err){
-					console.log(err);
-				} else {
-					// or send the document to the browser
-					res.send(doc);
-				}
-			});
-		}
-	});
-*/
 });
 
 
